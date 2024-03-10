@@ -14,8 +14,9 @@ const AdminDonation = () => {
         throw new Error('Failed to fetch donation data');
       }
       const data = await response.json();
+      console.log(data)
       setDonations(data);
-      console.log(donations)
+      // console.log(donations)
     } catch (error) {
       console.error('Error fetching donation data:', error);
     }
@@ -30,6 +31,7 @@ const AdminDonation = () => {
             <th className="px-4 py-2">Phone Number</th>
             <th className="px-4 py-2">Email</th>
             <th className="px-4 py-2">Amount</th>
+            <th className="px-4 py-2">Category</th>
             <th className="px-4 py-2">Payment ID</th>
             <th className="px-4 py-2">Status</th>
           </tr>
@@ -41,6 +43,7 @@ const AdminDonation = () => {
               <td className="border px-4 py-2">{donation.phoneno}</td>
               <td className="border px-4 py-2">{donation.email}</td>
               <td className="border px-4 py-2">{donation.amount}</td>
+              <td className="border px-4 py-2">{donation.category}</td>
               <td className="border px-4 py-2">{donation.payment_id}</td>
               <td className="border px-4 py-2">{donation.donstatus?"true":"false"}</td>
             </tr>

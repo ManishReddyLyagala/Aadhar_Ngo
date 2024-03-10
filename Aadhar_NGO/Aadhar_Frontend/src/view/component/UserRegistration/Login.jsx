@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {Link, useNavigate} from "react-router-dom"
 import loginlogo from "./Sample 2.gif";
 const Login=({ onLogin })=>{
@@ -8,37 +8,87 @@ const Login=({ onLogin })=>{
     email:"",
     password:""
   })
-  // const handleLogin = (e) => {
-  //   // Assuming your login process here
-  //   localStorage.setItem('isLoggedIn', true);
-  //   onLogin(); // Notify the parent component (App) about the login
-  // };
+  const [formErrors,setFormErrors]=useState({});
+  const [isSubmit,setIsSubmit]=useState(false);
+ 
 
   const formHandler=(e)=>{
     setlogin({...logindata,[e.target.name]:e.target.value});
   }
-  const handleLogin=async (e)=>{
-    e.preventDefault();
-    fetch('http://localhost:5000/users',{
+  useEffect(()=>{
+    if(Object.keys(formErrors).length===0&&isSubmit){
+      // console.log(logindata)
+      fetch('http://localhost:5000/users',{
       method:'POST',
       headers:{
         "Content-Type": "application/json"
       },
       body:JSON.stringify(logindata)
     }).then(data=>data.json()).then(resp=>{
-      console.log(resp.msg)
-      if(resp.email!==undefined ||resp.email!==null){
-      if(resp.msg=="ok"){localStorage.setItem('isLoggedIn', true)
+      console.log(resp)
+      if(resp.email==undefined ||resp.email==null){
+        alert('user not found?')
+      }
+      else if(resp.msg=="ok"){
+        localStorage.setItem('isLoggedIn', true)
         localStorage.setItem('user',JSON.stringify(resp))
         onLogin(); 
         { JSON.parse(localStorage.getItem('user'))&&JSON.parse(localStorage.getItem('user')).user=="Admin"?navigate('/Admin'):navigate('/')}
-      }else{alert('enter correct details')}
-      }else{
-        alert('user not found')
-      }
+      }else if(resp.msg!=="ok"){alert('enter a valid email/password')}
+      
     })
     .catch(err=>console.log(err))
+    }
+    setlogin({
+      email:"",
+      password:""
+    })
+  },[formErrors])
+  const handleLogin=async (e)=>{
+    e.preventDefault();
+    setFormErrors(validate(logindata));
+    setIsSubmit(true);
+    // fetch('http://localhost:5000/users',{
+    //   method:'POST',
+    //   headers:{
+    //     "Content-Type": "application/json"
+    //   },
+    //   body:JSON.stringify(logindata)
+    // }).then(data=>data.json()).then(resp=>{
+    //   console.log(resp.msg)
+    //   if(resp.email!==undefined ||resp.email!==null){
+    //   if(resp.msg=="ok"){localStorage.setItem('isLoggedIn', true)
+    //     localStorage.setItem('user',JSON.stringify(resp))
+    //     onLogin(); 
+    //     { JSON.parse(localStorage.getItem('user'))&&JSON.parse(localStorage.getItem('user')).user=="Admin"?navigate('/Admin'):navigate('/')}
+    //   }else{alert('enter correct details')}
+    //   }else{
+    //     alert('user not found')
+    //   }
+    // })
+    // .catch(err=>console.log(err))
    
+  }
+
+  const validate=(values)=>{
+    const errors={}
+    const regex=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    // if(!values.name){
+    //   errors.name="Username is required!";
+    // }
+    if(!values.email){
+      errors.email="Email is required!";
+    }
+    else if(!regex.test(values.email)){
+      errors.email="This is not a valid email format";
+    }
+    if(!values.password){
+      errors.password="Password is required!";
+    }else if(values.password.length<6){
+      errors.password="password must be more than 6 characters";
+    }
+    
+    return errors;
   }
     return(
     <section>
@@ -71,6 +121,7 @@ const Login=({ onLogin })=>{
                     ></input>
                   </div>
                 </div>
+                <p className="text-red-600">{formErrors.email}</p>
                 <div>
                   <div className="flex items-center justify-between">
                     <label htmlFor="" className="text-base font-medium text-gray-900">
@@ -93,6 +144,7 @@ const Login=({ onLogin })=>{
                     ></input>
                   </div>
                 </div>
+                <p className="text-red-600">{formErrors.password}</p>
                 <div>
                   <button
                     type="button"
@@ -101,6 +153,7 @@ const Login=({ onLogin })=>{
                     Get started 
                   </button>
                 </div>
+                <Link to="/forgot-password"  className="font-semibold text-black hover:text-blue-700 transition-all duration-200 hover:underline py-4">Forgot Password ?</Link>
               </div>
             </form>
             

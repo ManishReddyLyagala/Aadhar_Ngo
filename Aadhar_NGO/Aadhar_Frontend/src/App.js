@@ -23,7 +23,11 @@ import EditEvent from './view/component/admin/EditEvent.jsx';
 import EditVolunteers from './view/component/admin/EditVolunteers.jsx';
 import MyDonation from './view/component/donate/MyDonation.jsx';
 import MyEvents from './view/component/event/MyEvents.jsx';
-
+import ForgotPassword from './view/component/UserRegistration/ForgotPassword.jsx';
+import ResetPassword from './view/component/UserRegistration/ResetPassword.jsx';
+import BlogsHomepage from './view/component/Blogs/BlogsHomepage.jsx';
+import SingleBlogpage from './view/component/Blogs/SingleBlogpage.jsx';
+import EditBlog from './view/component/admin/EditBlog.jsx';
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
@@ -64,6 +68,8 @@ function App() {
           <Route path='/events' element={<Event />} />
           <Route path='/donate' element={<Donate />} />
           <Route path='/contact' element={<Contact />} />
+          <Route path='/blogs' element={<BlogsHomepage />} />
+          <Route path='/blogs/:id' element={<SingleBlogpage />} />
           <Route path='/login' element={<Login onLogin={handleLogin} />} />
           <Route path='/signin' element={<Signin onLogin={handleLogin} />} />
           <Route path='/volunteer' element={<Volunteer />} />
@@ -78,8 +84,15 @@ function App() {
           <Route path="/deleteuser/:id" element={<DeleteUser />} /> 
           <Route path="/editevent/:id" element={<EditEvent />} /> 
           <Route path="/editvolunteers/:id" element={<EditVolunteers />} /> 
-
-        
+          <Route path='/forgot-password' element={<ForgotPassword/>}/>
+          <Route path='/reset-password/:id' element={<ResetPassword/>}/>
+          <Route path="/editblog/:id" element={<EditBlog/>}/>
+          {/* <Route path="/adminusers" element={<AdminUsers />} />
+          <Route path="/adminevents" element={<AdminEvents />} />
+          <Route path="/adminvolunteers" element={<AdminVolunteers />} />
+          <Route path="/admindonations" element={<AdminDonations />} />
+          <Route path="/edituser/:id" element={<EditUser />} />
+          <Route path="/deleteuser/:id" element={<DeleteUser />} /> */}
         </Routes>
     </Router>
     </div>

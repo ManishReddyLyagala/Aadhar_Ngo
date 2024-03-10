@@ -1,5 +1,5 @@
 const db=require('../models')
-
+const nodemailer=require('nodemailer');
 //create mail Model
 const User= db.user;
 
@@ -28,13 +28,18 @@ const getAllUsers=async(req,res)=>{
 
 const getOneUser=async (req,res)=>{
     let email=req.body.email;
-    console.log(email)
+    // console.log(email)
     let userresp=await User.findOne({where:{ email : email }})
+    console.log(userresp)
     try{
-    if(userresp.password===req.body.password){
+        if(userresp==null){
+            res.send({email:null,password:null})
+            return;
+        }
+    if((userresp!=null)&&(userresp.password===req.body.password)){
         res.status(200).json({email:userresp.email,name:userresp.name,user:userresp.userType,msg:"ok"})
     }else{
-        res.status(500).json({msg:'the password is wrong'})
+        res.status(500).json({email:userresp.email,msg:'the password is wrong'})
     }
 }catch(e){
 
@@ -68,6 +73,60 @@ const deleteUser=async(req,res)=>{
     await User.destroy({where:{id:id}})
     res.status(200).send("deleted successfully!")
 }
+
+const forgetpassword=async(req,res)=>{
+   try{
+    let user=await User.findOne({where:{email:req.body.email}});
+    console.log("****************",user,"**************")
+    if(!user){return res.send({Status:"User not existed"})}
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        port:465,
+        secure:true,
+        logger:true,
+        debug:true,
+        secureConnection:false,
+        auth: {
+          user: 'manishreddy1177@gmail.com',
+          pass: process.env.Email_Pass
+        //   ftpx zqwr kjrf sbek
+        },
+        tls:{
+            rejectUnauthorized:true
+        }
+      });
+
+      const mailOptions = {
+        from: 'manishreddy1177@gmail.com',
+        to:req.body.email,
+        subject:"Reset Your Password",
+        text:`http://localhost:3000/reset-password/${user.id}`
+        
+      };
+    
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('Error sending email:', error);
+          res.status(500).send('Error sending email');
+        } else {
+          console.log('Email sent:', info.response);
+          res.status(200).send('Email sent successfully');
+        }
+      });
+    }catch(err){
+        console.log("in catch err",err);
+    }
+
+}
+
+const resetPassword=async(req,res)=>{
+    console.log('/////////////////',req.body.password)
+    const id=req.params.id;
+    console.log(id);
+    let userresp=await User.update(req.body,{where:{id:id}})
+    console.log(userresp)
+    res.status(200).send(userresp)
+}
 // user.findAll({where:{catagory:cat}})
 module.exports={
     addUser,
@@ -75,5 +134,7 @@ module.exports={
     getOneUser,
     updateUser,
     deleteUser,
-    getOneUserbyId
+    getOneUserbyId,
+    forgetpassword,
+    resetPassword
 }

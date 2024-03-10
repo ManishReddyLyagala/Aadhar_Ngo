@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Assuming you're using axios for HTTP requests
 import { useParams } from 'react-router';
+import { useNavigate } from 'react-router';
 function EditEvent() {
   const [eventName, setEventName] = useState('');
   const [catagory, setcatagory] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState(null);
     const {id}=useParams()
-  
+  const navigate=useNavigate()
   useEffect(() => {
     // Fetch event data from your database for editing
     axios.get(`http://localhost:5000/events/getoneevent/${id}`)
@@ -39,8 +40,9 @@ function EditEvent() {
 
     axios.put(`http://localhost:5000/events/update/${id}`, formData)
       .then(response => {
-        console.log('Event updated successfully!');
+        alert('Event updated successfully!');
         // Clear form fields or show success message
+       navigate('/adminevents')
       })
       .catch(error => {
         console.error('Error updating event: ', error);
@@ -91,7 +93,7 @@ function EditEvent() {
             id="image"
             accept="image/*"
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            onChange={handleImageChange}
+            onChange={handleImageChange} required
           />
         </div>
         <button

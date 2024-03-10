@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {Link, useNavigate} from "react-router-dom"
 import sample2 from './Sample 2.gif'
 import Admin from "../admin/Admin";
@@ -11,11 +11,14 @@ const Sigin=({ onLogin })=>{
     email:"",
     password:""
   })
-  const formHandler=(e)=>{
-    setsignin({...signindata,[e.target.name]:e.target.value});
-  }
-  const submitForm=async (e)=>{
-    e.preventDefault();
+
+  const [formErrors,setFormErrors]=useState({});
+  const [isSubmit,setIsSubmit]=useState(false);
+
+const submitHandler=async()=>{
+ if(user==="Admin" && Key===""){
+  alert("Admin Key is Required");
+ }
     if(user=="Admin" && Key!="ngo@657483@"){
       alert("Invalid Admin");
     }else{
@@ -37,6 +40,72 @@ const Sigin=({ onLogin })=>{
         }
     })
   }
+  setsignin({
+    name:"",
+    email:"",
+    password:""
+  })
+  setUserType("");
+  setKey("")
+}
+  useEffect(()=>{
+    if(Object.keys(formErrors).length===0&&isSubmit){
+    submitHandler();}
+  },[formErrors])
+  const formHandler=(e)=>{
+    setsignin({...signindata,[e.target.name]:e.target.value});
+  }
+  const submitForm=async (e)=>{
+    e.preventDefault();
+    setFormErrors(validate(signindata));
+    setIsSubmit(true);
+  //   if(user=="Admin" && Key!="ngo@657483@"){
+  //     alert("Invalid Admin");
+  //   }else{
+  //   // console.log(signindata)
+  //  const resp=await fetch('http://localhost:5000/adduser',{
+  //     method:'POST',
+  //     headers:{
+  //       "Content-Type": "application/json"
+  //     },
+  //     body:JSON.stringify({...signindata,user}),
+  //   })
+  //   resp.json().then(data=>{
+  //       if(data.email!==undefined ||data.email!==null){
+  //           localStorage.setItem('user',JSON.stringify(data));
+  //           localStorage.setItem('isLoggedIn', true);
+  //           onLogin()
+  //         {user=="Admin"?navigate('/Admin'):navigate('/')}
+            
+  //       }
+  //   })
+  // }
+  }
+  const validate=(values)=>{
+    console.log(values.password.length);
+    const errors={}
+    const regex=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    if(!values.name){
+      errors.name="Username is required!";
+    }
+    if(!values.email){
+      errors.email="Email is required!";
+    }
+    else if(!regex.test(values.email)){
+      errors.email="This is not a valid email format";
+    }
+    if(!values.password){
+      errors.password="Password is required!";
+    }else if(values.password.length<6){
+      errors.password="password must be more than 6 characters";
+    }else if(values.password.length>15){
+      errors.password="password can't exceed more than 15 characters!";
+    }
+    if(user===""){
+      errors.userType="User type is Required";
+    }
+    
+    return errors;
   }
     return(
     <section>
@@ -45,13 +114,13 @@ const Sigin=({ onLogin })=>{
           <div className="xl:mx-auto xl:w-full xl:max-w-sm 2xl:max-w-md">
             <h2 className="text-3xl font-bold leading-tight text-black sm:text-4xl">Signin</h2>
             <p className="mt-2 text-sm text-gray-600">
-              Don&apos;t have an account?{' '}
+             Already have an account?{' '}
               <Link
-                to="/signin"
+                to="/login"
                 title=""
                 className="font-semibold text-black transition-all duration-200 hover:underline"
               >
-                Create a free account
+                login
               </Link>
             </p>
             <form action="#" method="POST" className="mt-8">
@@ -60,8 +129,8 @@ const Sigin=({ onLogin })=>{
             <div className="flex ml-5 ">
             <p>User</p>{" "}<input className="mr-5 ml-2" type="radio" name="userType" value='User' onChange={(e)=>setUserType(e.target.value)}/>
             <p>Admin</p>{" "}<input className="mr-5 ml-2" type="radio" name="userType" value='Admin' onChange={(e)=>setUserType(e.target.value)}/>
-              </div>
-             {user=="Admin" ? <p className="text-base font-medium text-gray-900">Secrete Key : <input type="text" placeholder="Secret key" onChange={(e)=>setKey(e.target.value)}/></p>:null}
+             <p className="text-red-700">{formErrors.userType}</p> </div>
+             {user=="Admin" ? <p className="text-base font-medium text-gray-900">Secrete Key : <input type="text"  placeholder="Secret key" onChange={(e)=>setKey(e.target.value)}/></p>:null}
 
               <div>
                   <label htmlFor="" className="text-base font-medium text-gray-900">
@@ -76,6 +145,7 @@ const Sigin=({ onLogin })=>{
                     ></input>
                   </div>
                 </div>
+                <p className="text-red-700">{formErrors.name}</p>
                 <div>
                   <label htmlFor="" className="text-base font-medium text-gray-900">
                     {' '}
@@ -89,6 +159,7 @@ const Sigin=({ onLogin })=>{
                     ></input>
                   </div>
                 </div>
+                <p className="text-red-700">{formErrors.email}</p>
                 <div>
                   <div className="flex items-center justify-between">
                     <label htmlFor="" className="text-base font-medium text-gray-900">
@@ -111,6 +182,7 @@ const Sigin=({ onLogin })=>{
                     ></input>
                   </div>
                 </div>
+                <p className="text-red-700">{formErrors.password}</p>
                 <div>
                   <button
                     type="button"

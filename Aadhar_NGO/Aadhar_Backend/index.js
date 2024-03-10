@@ -10,6 +10,7 @@ const userController=require('./controllers/userController');
 const eventController=require('./controllers/eventController');
 const volunteerControler=require('./controllers/volunteerControler');
 const donateController=require('./controllers/donateController');
+const blogsController=require('./controllers/blogsController');
 //middleware
 app.use(cors());
 app.use(express.json({limit:"300mb"}));
@@ -23,7 +24,8 @@ app.post('/users',userController.getOneUser);
 app.get('/users/:id',userController.getOneUserbyId);
 app.put('/updateusers/:id',userController.updateUser);
 app.delete('/deleteusers/:id',userController.deleteUser);
-
+app.post('/forgetpassword',userController.forgetpassword);
+app.post('/resetpassword/:id',userController.resetPassword);
 // static images folder
 app.use('/Images',express.static('./Images'))
 //event apis
@@ -36,6 +38,7 @@ app.delete('/events/delete/:id',eventController.deleteEvent);
 //donate apis
 app.post('/donate',donateController.paymentInit);
 app.post('/donate/success',donateController.storeDonateDB);
+app.post('/donate/generatepdf',donateController.sendpdf);
 app.get('/getdontiondetails',donateController.getDonationDetails)
 app.get('/getonedonation/:email',donateController.getOneDonations)
 //volunters apis
@@ -47,48 +50,13 @@ app.get('/volunteer/getVolunteerbycat',volunteerControler.getVolunteerbyCat);
 app.get('/volunteer/getoneuserevents/:email',volunteerControler.getOneUserEvents);
 app.delete('/volunteer/deleteVolunteer/:id',volunteerControler.deleteVolunteer);
 
+//blogs apis
+app.post('/blogs/addblog',blogsController.uploadimage,blogsController.addBlog);
+app.get('/blogs/getAllBlogs',blogsController.getAllBlogs);
+app.get('/blogs/getOneBlog/:id',blogsController.getOneBlog);
+app.put('/blogs/updateblog/:id',blogsController.uploadimage,blogsController.updateBlog);
+app.delete('/blogs/deleteblog/:id',blogsController.deleteBlog);
 
-//mail to users
 
-// const transporter = nodemailer.createTransport({
-//     service: 'gmail',
-//     port:465,
-//     secure:true,
-//     logger:true,
-//     debug:true,
-//     secureConnection:false,
-//     auth: {
-//       user: 'manishreddy1177@gmail.com',
-//       pass: 'ftpx zqwr kjrf sbek'
-//     //   ftpx zqwr kjrf sbek
-//     },
-//     tls:{
-//         rejectUnauthorized:true
-//     }
-//   });
-
-//   app.post('/send-email', (req, res) => {
-//     const { to, subject, text, html } = req.body;
-  
-//     const mailOptions = {
-//       from: 'manishreddy1177@gmail.com',
-//       to,
-//       subject,
-//       text,
-//       html
-//     };
-  
-//     transporter.sendMail(mailOptions, (error, info) => {
-//       if (error) {
-//         console.error('Error sending email:', error);
-//         res.status(500).send('Error sending email');
-//       } else {
-//         console.log('Email sent:', info.response);
-//         res.status(200).send('Email sent successfully');
-//       }
-//     });
-
-//   });
-  
 app.listen(PORT,()=>console.log("listening at "+PORT)
 );

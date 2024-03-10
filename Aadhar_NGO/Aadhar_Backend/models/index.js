@@ -65,5 +65,6 @@ db.user=require('./userModel')(sequelize,DataTypes)
 db.event=require('./eventModel')(sequelize,DataTypes)
 db.donate=require('./donateModel')(sequelize,DataTypes)
 db.Volunteer=require('./volunteerModel')(sequelize,DataTypes)
+db.blog=require('./BlogsModel')(sequelize,DataTypes)
 sequelize.sync({force:false});
 module.exports=db;

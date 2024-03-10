@@ -2,10 +2,17 @@ const db=require('../models')
 const Donate=db.donate;
 const Razorpay = require("razorpay")
 const { v4: uuidv4 } = require('uuid');
+const nodemailer=require('nodemailer');
+const fs=require('fs');
+const path=require('path');
+const fileURLToPath=require('url');
+const PDFDocument=require('pdfkit');
 const razorpay=new Razorpay({
     key_id:'rzp_test_fAhH6UNJRrS55W',
     key_secret:'MvFrSpq0WbrJjGLUwthQnK6B'
 })
+
+
 const paymentInit = async (req,res) =>{
     try{
         const payment_capture=1;
@@ -53,6 +60,76 @@ const storeDonateDB=async (req,res)=>{
     }
 }
 
+const generatePdf = async (donordata) => {
+    return new Promise((resolve, reject) => {
+        const doc = new PDFDocument();
+        const __dirName = path.dirname(__filename);
+        const pdfPath = path.join(__dirName, `${donordata.dname}_receipt.pdf`);
+        const writeStream = fs.createWriteStream(pdfPath);
+        
+        doc.pipe(writeStream);
+        doc.fontSize(25).text('Aadhar Donation Payment Receipt', 100, 50);
+        doc.text(`Donor Name: ${donordata.dname}`, 100, 100);
+        doc.text(`Amount: ${donordata.amount}`, 100, 150);
+        doc.text(`Category: ${donordata.category}`, 100, 200);
+        doc.text(`Payment ID: ${donordata.payment_id}`, 100, 250);
+        doc.end();
+        
+        writeStream.on('finish', function () {
+            console.log('PDF generation finished.');
+            resolve(pdfPath);
+        });
+
+        writeStream.on('error', function (err) {
+            console.log('PDF generation error:', err);
+            reject(err);
+        });
+    });
+};
+
+const sendemail = async (email, subject, text, attachments = []) => {
+    console.log('Sending email to:', email);
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'manishreddy1177@gmail.com',
+            pass: process.env.Email_Pass
+        }
+    });
+    
+    const mailOptions = {
+        from: 'manishreddy1177@gmail.com',
+        to: email,
+        subject: subject,
+        text: text,
+        attachments: attachments
+    };
+  
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent:', info.response);
+    } catch (error) {
+        console.log('Email sending error:', error);
+        throw new Error('Failed to send email');
+    }
+};
+
+const sendpdf = async (req, res) => {
+    console.log(req.body.payment_id)
+    try {
+        const pdfpath = await generatePdf(req.body);
+        await sendemail(req.body.email, 'Your Payment Receipt', 'Please find attached your payment receipt.', [{
+            filename: `${req.body.dname}_receipt.pdf`,
+            path: pdfpath
+        }]);
+        console.log('Email sent successfully.');
+        res.status(200).send({msg:'please check your email the donation has successfully done'});
+    } catch (e) {
+        console.log('Error:', e);
+        res.status(500).send({msg:'Internal Server Error'});
+    }
+};
+
 const getDonationDetails=async(req,res)=>{
 try{
     const resp=await Donate.findAll({})
@@ -70,5 +147,6 @@ module.exports={
     paymentInit,
     storeDonateDB,
     getDonationDetails,
-    getOneDonations
+    getOneDonations,
+    sendpdf
 }

@@ -18,6 +18,10 @@ const menuItems = [
     name: 'Contact',
     path: '/contact',
   },
+  {
+    name:'Blogs',
+    path:'/blogs',
+  }
   
 ]
 
@@ -56,17 +60,19 @@ console.log(userdetails)
         </div>
         <div className="hidden grow items-start lg:flex">
           <ul className="ml-12 inline-flex space-x-8">
-            {menuItems.map((item) => (
+            { menuItems.map((item) => (
+            (item.name!=null)? <>
               <li key={item.name}>
+                {console.log(menuItems.length)}
                 <Link
                   to={item.path}
                   className="inline-flex items-center text-sm font-semibold text-gray-800 hover:text-gray-900"
                 >
                   {item.name}
-                 
+              
                 </Link>
               </li>
-            ))}
+            </>:""))}
           </ul>
         </div>
       
@@ -77,7 +83,7 @@ console.log(userdetails)
         onMouseEnter={handleMouseEnter}
         onClick={handleMouseLeave}
       >
-        {userdetails.name}
+        {userdetails!=null?userdetails.name:""}
       </div>
       {isHovered && (
         <div className="absolute w-40 right-0 mt-2 bg-white rounded-lg shadow-md p-4 z-10 py-5">

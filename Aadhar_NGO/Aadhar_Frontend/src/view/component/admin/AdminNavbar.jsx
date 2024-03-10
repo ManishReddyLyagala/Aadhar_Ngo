@@ -7,6 +7,8 @@ import AdminDonations from './AdminDonations';
 import AdminVolunteers from './AdminVolunteers';
 import { useNavigate } from 'react-router-dom';
 import AddEvents from './AddEvents';
+import AddBlogs from './AddBlogs';
+import AdminBlogs from './AdminBlogs';
 function AdminNavbar({islogin}) {
   const [index, setIndex] = useState(0);
     const navigate=useNavigate();
@@ -26,6 +28,10 @@ function AdminNavbar({islogin}) {
         return <AdminVolunteers />;
       case 4:
         return <AddEvents />;
+      case 5:
+        return <AddBlogs />;
+      case 6:
+        return <AdminBlogs />;
       default:
         return null;
     }
@@ -50,7 +56,13 @@ function AdminNavbar({islogin}) {
               <Link to="/admindonations" className="block py-2 px-4 hover:bg-gray-700" onClick={() => handleIndexChange(2)}>Donations</Link>
             </li>
             <li>
+              <Link to="/adminblogs" className="block py-2 px-4 hover:bg-gray-700" onClick={() => handleIndexChange(6)}>Blogs</Link>
+            </li>
+            <li>
               <Link to="/addevent" className="block py-2 px-4 hover:bg-gray-700" onClick={() => handleIndexChange(4)}>Add Events</Link>
+            </li>
+            <li>
+              <Link to="/addblogs" className="block py-2 px-4 hover:bg-gray-700" onClick={() => handleIndexChange(5)}>Add Blogs</Link>
             </li>
           <li><Link onClick={()=>{localStorage.removeItem('user');
             localStorage.removeItem('isLoggedIn');

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import hand from "../../../assets/image/hand.png";
 import "../../../styles/donate/DonateStyle.css";
 import { FaWallet, FaUser, FaGift, FaCamera } from "react-icons/fa";
@@ -27,12 +27,56 @@ const Donate = () => {
     category:"",
     amount: 0
   })
+  const [paymentid,setPaymentId]=useState('');
+  const [formErrors,setFormErrors]=useState({});
+  const [isSubmit,setIsSubmit]=useState(false);
+
+ 
   const changeHandler = (e) => {
     setDetails({ ...donateDetails, [e.target.name]: e.target.value })
   }
 
+  const submitHandler=(e)=>{
+    e.preventDefault();
+    setFormErrors(validate(donateDetails));
+    setIsSubmit(true);
+  if(Object.keys(formErrors).length===0){
+    PayHandler();
+
+  }
+    document.getElementById('donateid').reset();
+  }
+
+ 
+  const validate=(values)=>{
+    const errors={}
+    const regex=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    if(!values.name){
+      errors.name="Username is required!";
+    }
+    if(!values.email){
+      errors.email="Email is required!";
+    }
+    else if(!regex.test(values.email)){
+      errors.email="This is not a valid email format";
+    }
+    if(!values.phoneno){
+      errors.phoneno="phone no is required!";
+    }else if(values.phoneno.length!==10){
+      errors.phoneno="phone no must be 10 characters";
+    }
+
+    if(values.amount==0){
+      errors.amount="Amount field is empty";
+    }
+    
+    return errors;
+  }
+
   const PayHandler = async () => {
+   
     // console.log(donateDetails)
+    if(donateDetails.amount>0){
     setloading(true)
     const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js')
     if (!res) {
@@ -58,11 +102,12 @@ const Donate = () => {
         description: 'Thank you for Donating!!',
         Image: logoimg,
         handler: function (res) {
-          console.log(res);
+          // console.log(res);
           // alert(res.razorpay_payment_id)
           // alert(res.razorpay_order_id)
           // alert(res.razorpay_signature)
           if (res.razorpay_order_id !== undefined) {
+            setPaymentId(res.razorpay_order_id);
             fetch('http://localhost:5000/donate/success',
               {
                 method: 'POST',
@@ -71,7 +116,19 @@ const Donate = () => {
                 },
                 body: JSON.stringify({ amount: donateDetails.amount, dname: donateDetails.name, phoneno: donateDetails.phoneno, email: donateDetails.email, payment_id: res.razorpay_order_id, status: true,category:donateDetails.category })
 
+              }).then(data=>data.json())
+              .then(res=>{
+                console.log(paymentid)
+                fetch('http://localhost:5000/donate/generatepdf',{
+                  method:'POST',
+                  headers: {
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({ amount: donateDetails.amount, dname: donateDetails.name, phoneno: donateDetails.phoneno, email: donateDetails.email, payment_id: paymentid, status: true,category:donateDetails.category })
+  
+                }).then(res=>res.json()).then(data=>alert(data.msg)).catch(err=>console.log(err))
               })
+              .catch(err=>console.log(err))
           }
         },
         prefill: {
@@ -83,8 +140,9 @@ const Donate = () => {
       const paymentObject = new window.Razorpay(options)
       setloading(false)
       paymentObject.open()
+     
     })
-
+  }else{alert('amount should me greater than zero rupees')}
   }
   return (
     <section className="donate flex items-center -my-10 justify-center ">
@@ -152,22 +210,22 @@ const Donate = () => {
       <div className="items-center justify-center w-screen h-full grid pt-5 w-2/5 py-2">
         <div className="items-center justify-center p-10 bg-gray-200">
           <h2 className="text-orange-500">Fill the Form to Donate</h2>
-          <form className="w-full py-1">
+          <form className="w-full py-1" id="donateid">
             <div >
               <label htmlFor="name" className="text-base font-medium text-gray-900">
                 Name : <input type="text" placeholder="Enter Donor Name"
                   className="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 mt-1"
-                  value={donateDetails.value} name="name" onChange={changeHandler} /></label>
+                  value={donateDetails.value} name="name" onChange={changeHandler} /><p className="text-red-700">{formErrors.name}</p></label>
               <br />
               <label htmlFor="phoneno" className="text-base font-medium text-gray-900">
                 Phone No : <input type="number" placeholder="Enter Donor Number"
                   className="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 mt-1"
-                  value={donateDetails.value} name="phoneno" onChange={changeHandler} /></label>
+                  value={donateDetails.value} name="phoneno" onChange={changeHandler} /><p className="text-red-700">{formErrors.phoneno}</p></label>
               <br />
               <label htmlFor="email" className="text-base font-medium text-gray-900">
                 Email : <input type="email" placeholder="Enter Donor Email Address"
                   className="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 mt-1"
-                  value={donateDetails.value} name="email" onChange={changeHandler} /></label> <br />
+                  value={donateDetails.value} name="email" onChange={changeHandler} /><p className="text-red-700">{formErrors.email}</p></label> <br />
               <label htmlFor="Category" className="text-base font-medium text-gray-900">
                 Category : <select name="category" defaultValue="Education" onChange={changeHandler} placeholder="select one"
                   className="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 mt-1">
@@ -181,10 +239,10 @@ const Donate = () => {
               <label htmlFor="amount" className="text-base font-medium text-gray-900">
                 Amount : <input type="number" placeholder="Enter Amount"
                   className="flex h-10 w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 mt-1"
-                  value={donateDetails.value} name="amount" onChange={changeHandler} /></label> <br />
+                  value={donateDetails.value} name="amount" onChange={changeHandler} /><p className="text-red-700">{formErrors.amount}</p></label> <br />
               <div className="flex flex-row justify-center items-center">
                 {loading ? <img src={loadimg} alt="" width={40} height={40} /> : <button type="button" className="text-white flex w-full h-1 items-center justify-center rounded-md bg-black px-3.5 py-4 font-semibold leading-7  hover:bg-black/80"
-                  onClick={PayHandler}>Checkout</button>}
+                  onClick={submitHandler}>Checkout</button>}
               </div>
             </div>
           </form>

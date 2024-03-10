@@ -9,6 +9,8 @@ import AdminDonations from './AdminDonations';
 import { Route,Router ,Routes,Link} from 'react-router-dom';
 import EditUser from './EditUser';
 import DeleteUser from './DeleteUser';
+import AddBlogs from './AddBlogs';
+import AdminBlogs from './AdminBlogs';
 const Admin=()=> {
   
 
@@ -24,6 +26,9 @@ const Admin=()=> {
           <Route path="/admindonations" element={<AdminDonations />} />
           <Route path="/edituser/:id" element={<EditUser />} />
           <Route path="/deleteuser/:id" element={<DeleteUser />} />
+          <Route path="/addblogs" element={<AddBlogs/>}/>
+          <Route path="/adminblogs" element={<AdminBlogs/>}/>
+         
        </Router>
        </div>
       </div>
